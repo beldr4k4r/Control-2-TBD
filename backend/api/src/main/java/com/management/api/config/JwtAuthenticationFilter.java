@@ -29,18 +29,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            String username = jwtUtils.extractUsername(token);
-            String role = jwtUtils.extractRole(token);
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                //SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
-                SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        username, null, Collections.singletonList(authority));
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            try {
+                String username = jwtUtils.extractUsername(token);
+
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
+
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            username, null, Collections.singletonList(authority));
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception e) {
+                System.out.println("Token inválido o expirado: " + e.getMessage());
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }

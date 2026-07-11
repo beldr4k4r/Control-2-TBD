@@ -1,7 +1,6 @@
 package com.management.api.config;
 
 import com.management.api.models.AuthUser;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,19 +23,16 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    public String generateToken(AuthUser user, int id_user) {
+    public String generateToken(AuthUser user) {
         return Jwts.builder()
                 .claim("id_auth", user.getId_auth())
-                .claim("email", user.getEmail())
-                .claim("role", user.getRoleName())
-                .claim("location", user.getLocation())
-                .claim("id_user", id_user)
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(getSigningKey())
                 .compact();
     }
+
     public String extractUsername(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -46,33 +42,28 @@ public class JwtUtils {
                 .getSubject();
     }
 
-    public String extractRole(String token) {
+    public Long extractIdAuth(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .get("role", String.class);
-    }
-
-    public Integer extractIdUser(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .get("id_user", Integer.class);
+                .get("id_auth", Long.class);
     }
 
     private String extractTokenFromRequest(HttpServletRequest request) {
-        return request.getHeader("Authorization").substring(7);
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
     }
 
-    public Integer extractIdUser(HttpServletRequest request) {
-        return extractIdUser(extractTokenFromRequest(request));
-    }
-
-    public boolean hasRole(HttpServletRequest request, String role) {
-        return role.equals(extractRole(extractTokenFromRequest(request)));
+    public Long extractIdAuth(HttpServletRequest request) {
+        String token = extractTokenFromRequest(request);
+        if (token != null) {
+            return extractIdAuth(token);
+        }
+        return null;
     }
 }
