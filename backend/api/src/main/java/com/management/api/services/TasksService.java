@@ -61,4 +61,8 @@ public class TasksService {
     public Double getAverageDistanceOfCompleted(Long userId) {
         return tasksRepository.getAverageDistanceOfCompletedTasks(userId);
     }
+
+    public List<Tasks> getTasksBySector(Long sectorId) {
+        return tasksRepository.findBySector(sectorId);
+    }
 }

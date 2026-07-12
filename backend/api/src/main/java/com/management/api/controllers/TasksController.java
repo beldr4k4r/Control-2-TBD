@@ -46,6 +46,12 @@ public class TasksController {
                    .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @GetMapping("/{id}/sector")
+    public ResponseEntity<List<Tasks>> getSector(@PathVariable Long id) {
+        List<Tasks> tasks = tasksService.getTasksBySector(id);
+        return ResponseEntity.ok(tasks);
+    }   
+
     @PostMapping
     public ResponseEntity<Tasks> createTask(@RequestBody Tasks task) {
         Tasks newTask = tasksService.saveTask(task);

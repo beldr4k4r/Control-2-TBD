@@ -13,6 +13,7 @@ import com.management.api.models.Tasks;
 public interface TasksRepository extends JpaRepository<Tasks, Long>{
 
     List<Tasks> findByUserIdAuth(Long userId);
+    List<Tasks> findBySector(Long IdSector);
 
     @Query(value = "SELECT t.* FROM tasks t " + "JOIN sectors s ON t.sector_id = s.id " +
            "JOIN auth_user u ON t.user_id = u.id_auth " +

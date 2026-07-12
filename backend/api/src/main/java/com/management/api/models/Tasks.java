@@ -57,4 +57,8 @@ public class Tasks {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private AuthUser user;
+
+    @ManyToOne
+    @JoinColumn(name = "id_sector", nullable = false)
+    private Sector sector;
 }
