@@ -21,7 +21,7 @@ public class TasksService {
     private TasksRepository tasksRepository;
 
     public List<Tasks> getTasksByUserId(Long userId){
-        return tasksRepository.findByUser_Id_auth(userId);
+        return tasksRepository.findByUserIdAuth(userId);
     }
 
     public Optional<Tasks> getTaskById(Long userId){

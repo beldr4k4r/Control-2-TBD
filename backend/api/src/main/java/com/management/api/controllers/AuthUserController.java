@@ -1,6 +1,7 @@
 package com.management.api.controllers;
 
 
+import com.management.api.dto.LoginDTO;
 import com.management.api.dto.RegisterDTO;
 import com.management.api.models.AuthUser;
 import com.management.api.services.AuthUserService;
@@ -24,6 +25,16 @@ public class AuthUserController {
             String response = authUserService.createUser(register);
             return ResponseEntity.ok(response);
         }catch(RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginDTO login) {
+        try {
+            String response = authUserService.loginUser(login);
+            return ResponseEntity.ok(response);
+        }
+        catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

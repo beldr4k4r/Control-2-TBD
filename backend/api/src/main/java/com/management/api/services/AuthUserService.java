@@ -1,6 +1,7 @@
 package com.management.api.services;
 
 import com.management.api.config.JwtUtils;
+import com.management.api.dto.LoginDTO;
 import com.management.api.dto.RegisterDTO;
 import com.management.api.models.AuthUser;
 import com.management.api.repositories.AuthUserRepository;
@@ -35,14 +36,21 @@ public class AuthUserService {
         AuthUser newUser = new AuthUser();
         newUser.setUsername(user.getUsername());
         newUser.setPassword(hashedPassword);
-
         GeometryFactory geometryFactory = new GeometryFactory();
         Point locationPoint = geometryFactory.createPoint(new Coordinate(user.getLongitud(), user.getLatitud()));
         locationPoint.setSRID(4326);
-
         newUser.setLocation(locationPoint);
-
         authUserRepository.save(newUser);
         return "Usuario registrado con exito";
+    }
+    public String loginUser(LoginDTO login) {
+        AuthUser user = authUserRepository.findByUsername(login.getUsername())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        if (passwordEncoder.matches(login.getPassword(), user.getPassword())) {
+            return jwtUtils.generateToken(user);
+
+        } else {
+            throw new RuntimeException("Credenciales incorrectas");
+        }
     }
 }
