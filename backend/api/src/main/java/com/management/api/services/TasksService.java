@@ -1,10 +1,13 @@
 package com.management.api.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import javax.management.RuntimeErrorException;
 
+import com.management.api.dto.TaskCountBySectorDTO;
+import com.management.api.dto.TaskCountBySectorProjection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Service;
@@ -65,4 +68,17 @@ public class TasksService {
     public List<Tasks> getTasksBySector(Long sectorId) {
         return tasksRepository.findBySector(sectorId);
     }
+
+
+
+    public List<TaskCountBySectorDTO> getTaskCountBySector(Long userId) {
+        List<TaskCountBySectorProjection> projections = tasksRepository.countTasksBySectorForUser(userId);
+
+        List<TaskCountBySectorDTO> result = new ArrayList<>();
+        for (TaskCountBySectorProjection p : projections) {
+            result.add(new TaskCountBySectorDTO(p.getSectorId(), p.getSectorName(), p.getTaskCount()));
+        }
+        return result;
+    }
+
 }

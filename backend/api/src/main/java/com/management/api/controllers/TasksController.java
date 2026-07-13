@@ -1,5 +1,6 @@
 package com.management.api.controllers;
 
+import com.management.api.dto.TaskCountBySectorDTO;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.management.api.models.Tasks;
@@ -102,5 +103,11 @@ public class TasksController {
     public ResponseEntity<Double> getAverageDistanceOfCompleted(@PathVariable Long userId) {
         Double avgDistance = tasksService.getAverageDistanceOfCompleted(userId);
         return new ResponseEntity<>(avgDistance, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/{userId}/by-sector")
+    public ResponseEntity<List<TaskCountBySectorDTO>> getTasksBySectorForUser(@PathVariable Long userId) {
+        List<TaskCountBySectorDTO> result = tasksService.getTaskCountBySector(userId);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }
