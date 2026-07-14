@@ -1,5 +1,6 @@
 package com.management.api.controllers;
 
+import com.management.api.dto.TaskCountBySectorDTO;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.management.api.models.Tasks;
@@ -111,5 +112,15 @@ public class TasksController {
     ) {
         List<Tasks> filteredTasks = tasksService.filterTasks(completed, keyword);
         return new ResponseEntity<>(filteredTasks, HttpStatus.OK);
+    }
+    @GetMapping("/user/{userId}/sector-most-completed")
+    public ResponseEntity<TaskCountBySectorDTO> getSectorWithMostCompletedTasksInRadius(
+            @PathVariable Long userId,
+            @RequestParam Double radiusKm) {
+        TaskCountBySectorDTO result = tasksService.getSectorWithMostCompletedTasksInRadius(userId, radiusKm);
+        if (result != null) {
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

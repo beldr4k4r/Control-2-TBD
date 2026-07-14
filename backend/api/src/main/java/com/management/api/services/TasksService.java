@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import javax.management.RuntimeErrorException;
 
+import com.management.api.dto.TaskCountBySectorDTO;
+import com.management.api.dto.TaskCountBySectorProjection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Service;
@@ -68,5 +70,13 @@ public class TasksService {
 
     public List<Tasks> filterTasks(Boolean completed, String keyword) {
         return tasksRepository.findByCompletedAndKeyword(completed, keyword);
+    }
+    public TaskCountBySectorDTO getSectorWithMostCompletedTasksInRadius(Long userId, Double radiusKm) {
+        Double radiusMeters = radiusKm * 1000;
+        TaskCountBySectorProjection p = tasksRepository.findSectorWithMostCompletedTasksInRadius(userId, radiusMeters);
+        if (p == null) {
+            return null;
+        }
+        return new TaskCountBySectorDTO(p.getSectorId(), p.getSectorName(), p.getTaskCount());
     }
 }
