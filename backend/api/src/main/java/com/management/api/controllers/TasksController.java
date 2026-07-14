@@ -123,4 +123,8 @@ public class TasksController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+    @GetMapping("/user/{userId}/by-sector")
+    public ResponseEntity<List<TaskCountBySectorDTO>> getTasksBySectorForUser(@PathVariable Long userId) {
+        List<TaskCountBySectorDTO> result = tasksService.getTaskCountBySector(userId);
+        return new ResponseEntity<>(result, HttpStatus.OK);}
 }

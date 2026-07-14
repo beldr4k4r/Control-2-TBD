@@ -1,5 +1,6 @@
 package com.management.api.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,5 +79,15 @@ public class TasksService {
             return null;
         }
         return new TaskCountBySectorDTO(p.getSectorId(), p.getSectorName(), p.getTaskCount());
+    }
+
+    public List<TaskCountBySectorDTO> getTaskCountBySector(Long userId) {
+        List<TaskCountBySectorProjection> projections = tasksRepository.countTasksBySectorForUser(userId);
+
+        List<TaskCountBySectorDTO> result = new ArrayList<>();
+        for (TaskCountBySectorProjection p : projections) {
+            result.add(new TaskCountBySectorDTO(p.getSectorId(), p.getSectorName(), p.getTaskCount()));
+        }
+        return result;
     }
 }

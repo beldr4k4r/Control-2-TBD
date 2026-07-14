@@ -50,4 +50,17 @@ public interface TasksRepository extends JpaRepository<Tasks, Long>{
             "LIMIT 1",
             nativeQuery = true)
     TaskCountBySectorProjection findSectorWithMostCompletedTasksInRadius(Long userId, Double radiusMeters);
+
+    @Query(value = "SELECT s.id_sector AS sectorId, s.sector_name AS sectorName, COUNT(t.id_task) AS taskCount " +
+            "FROM tasks t " +
+            "JOIN sectors s ON t.id_sector = s.id_sector " +
+            "WHERE t.user_id = ?1 " +
+            "GROUP BY s.id_sector, s.sector_name " +
+            "ORDER BY COUNT(t.id_task) DESC",
+    nativeQuery = true)
+
+    List<TaskCountBySectorProjection> countTasksBySectorForUser(Long userId);
+
+
+
 }
