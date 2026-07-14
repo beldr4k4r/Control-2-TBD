@@ -1,6 +1,5 @@
 package com.management.api.controllers;
 
-import com.management.api.dto.TaskCountBySectorDTO;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.management.api.models.Tasks;
@@ -105,9 +104,12 @@ public class TasksController {
         return new ResponseEntity<>(avgDistance, HttpStatus.OK);
     }
 
-    @GetMapping("/user/{userId}/by-sector")
-    public ResponseEntity<List<TaskCountBySectorDTO>> getTasksBySectorForUser(@PathVariable Long userId) {
-        List<TaskCountBySectorDTO> result = tasksService.getTaskCountBySector(userId);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+    @GetMapping("/filter")
+    public ResponseEntity<List<Tasks>> getFilteredTasks(
+            @RequestParam(required = false) Boolean completed,
+            @RequestParam(required = false) String keyword
+    ) {
+        List<Tasks> filteredTasks = tasksService.filterTasks(completed, keyword);
+        return new ResponseEntity<>(filteredTasks, HttpStatus.OK);
     }
 }

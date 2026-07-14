@@ -2,9 +2,6 @@ package com.management.api.repositories;
 
 import java.util.List;
 
-import com.management.api.dto.TaskCountBySectorDTO;
-import com.management.api.dto.TaskCountBySectorProjection;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -33,15 +30,10 @@ public interface TasksRepository extends JpaRepository<Tasks, Long>{
            nativeQuery = true)
     Double getAverageDistanceOfCompletedTasks(Long userId);
 
-
-    @Query(value = "SELECT s.id_sector AS sectorId, s.sector_name AS sectorName, COUNT(t.id_task) AS taskCount " +
-            "FROM tasks t " +
-            "JOIN sectors s ON t.id_sector = s.id_sector " +
-            "WHERE t.user_id = ?1 " +
-            "GROUP BY s.id_sector, s.sector_name " +
-            "ORDER BY COUNT(t.id_task) DESC",
+    @Query(value = "SELECT * FROM tasks WHERE " +
+            "(?1 IS NULL OR complete_task = ?1) AND " +
+            "(?2 IS NULL OR LOWER(task_name) LIKE LOWER(CONCAT('%', ?2, '%')) " +
+            "OR LOWER(description) LIKE LOWER(CONCAT('%', ?2, '%')))",
             nativeQuery = true)
-    List<TaskCountBySectorProjection> countTasksBySectorForUser(Long userId);
-
-
+    List<Tasks> findByCompletedAndKeyword(Boolean completed, String keyword);
 }

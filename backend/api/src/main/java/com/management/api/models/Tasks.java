@@ -1,5 +1,7 @@
 package com.management.api.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -56,9 +58,11 @@ public class Tasks {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "location", "tasks"}) // <--- AGREGA ESTO
     private AuthUser user;
 
     @ManyToOne
     @JoinColumn(name = "id_sector", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "location", "tasks"}) // <--- AGREGA ESTO
     private Sector sector;
 }
