@@ -1,5 +1,6 @@
 package com.management.api.controllers;
 
+import com.management.api.dto.PendingTaskClusterDTO;
 import com.management.api.dto.TaskCountBySectorDTO;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -127,4 +128,11 @@ public class TasksController {
     public ResponseEntity<List<TaskCountBySectorDTO>> getTasksBySectorForUser(@PathVariable Long userId) {
         List<TaskCountBySectorDTO> result = tasksService.getTaskCountBySector(userId);
         return new ResponseEntity<>(result, HttpStatus.OK);}
+
+
+    @GetMapping("/pending-clusters")
+    public ResponseEntity<List<PendingTaskClusterDTO>> getPendingTasksClusters() {
+        List<PendingTaskClusterDTO> result = tasksService.getPendingTasksClusters();
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 }

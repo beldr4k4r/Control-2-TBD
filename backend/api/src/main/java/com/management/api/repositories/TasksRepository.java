@@ -2,6 +2,7 @@ package com.management.api.repositories;
 
 import java.util.List;
 
+import com.management.api.dto.PendingTaskClusterProjection;
 import com.management.api.dto.TaskCountBySectorProjection;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,7 +25,7 @@ public interface TasksRepository extends JpaRepository<Tasks, Long>{
             nativeQuery = true)
     Tasks findNearestPendingTask(Long userId);
 
-    @Query(value = "SELECT COALESCE(AVG(ST_Distance(s.sector_location, u.location)), 0) " +
+    @Query(value = "SELECT COALESCE(AVG(ST_Distance(s.sector_location::geography, u.location::geography)), 0) " +
             "FROM tasks t " +
             "JOIN sectors s ON t.id_sector = s.id_sector " +
             "JOIN auth_user u ON t.user_id = u.id_auth " +
@@ -61,7 +62,21 @@ public interface TasksRepository extends JpaRepository<Tasks, Long>{
     nativeQuery = true)
 
     List<TaskCountBySectorProjection> countTasksBySectorForUser(Long userId);
-
+    @Query(value = "SELECT cluster_id AS clusterId, COUNT(*) AS taskCount, " +
+            "ST_X(ST_Centroid(ST_Collect(sector_location))) AS centroidLongitude, " +
+            "ST_Y(ST_Centroid(ST_Collect(sector_location))) AS centroidLatitude " +
+            "FROM ( " +
+            "  SELECT s.sector_location, " +
+            "         ST_ClusterKMeans(s.sector_location, LEAST(3, (SELECT COUNT(DISTINCT id_sector) FROM sectors)::int)) " +
+            "         OVER () AS cluster_id " +
+            "  FROM tasks t " +
+            "  JOIN sectors s ON t.id_sector = s.id_sector " +
+            "  WHERE t.complete_task = false " +
+            ") sub " +
+            "GROUP BY cluster_id " +
+            "ORDER BY taskCount DESC",
+            nativeQuery = true)
+    List<PendingTaskClusterProjection> getPendingTasksClusters();
 
 
 }

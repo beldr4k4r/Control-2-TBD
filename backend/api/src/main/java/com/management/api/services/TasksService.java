@@ -3,7 +3,8 @@ package com.management.api.services;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
+import com.management.api.dto.PendingTaskClusterDTO;
+import com.management.api.dto.PendingTaskClusterProjection;
 import javax.management.RuntimeErrorException;
 
 import com.management.api.dto.TaskCountBySectorDTO;
@@ -90,4 +91,17 @@ public class TasksService {
         }
         return result;
     }
+
+
+    public List<PendingTaskClusterDTO> getPendingTasksClusters() {
+        List<PendingTaskClusterProjection> projections = tasksRepository.getPendingTasksClusters();
+
+        List<PendingTaskClusterDTO> result = new ArrayList<>();
+        for (PendingTaskClusterProjection p : projections) {
+            result.add(new PendingTaskClusterDTO(p.getClusterId(), p.getTaskCount(),
+                    p.getCentroidLongitude(), p.getCentroidLatitude()));
+        }
+        return result;
+    }
+
 }
