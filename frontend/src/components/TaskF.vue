@@ -25,12 +25,11 @@
 
         <div class="form-group">
           <label>Sector Asociado:</label>
-          <select v-model="form.sector" required>
+          <select v-model="form.sectorId" required>
             <option value="" disabled>Selecciona un sector...</option>
-            <option value="calles">Calles</option>
-            <option value="construcción">Construcción</option>
-            <option value="reparación de semáforos">Reparación de Semáforos</option>
-            <option value="parques">Parques y Jardines</option>
+            <option v-for="sector in sectors" :key="sector.idSector" :value="sector.idSector">
+              {{ sector.sectorName }}
+            </option>
           </select>
         </div>
 
@@ -52,6 +51,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  sectors: {
+    type: Array,
+    default: () => []
+  }
 })
 
 const emit = defineEmits(['close', 'save'])
@@ -60,7 +63,7 @@ const form = ref({
   title: '',
   description: '',
   dueDate: '',
-  sector: '',
+  sectorId: '',
 })
 
 const isEditing = computed(() => !!props.taskData)
@@ -70,9 +73,15 @@ watch(
   (newVal) => {
     if (newVal) {
       if (props.taskData) {
-        form.value = { ...props.taskData }
+        form.value = { 
+          id: props.taskData.id,
+          title: props.taskData.title,
+          description: props.taskData.description,
+          dueDate: props.taskData.dueDate,
+          sectorId: props.taskData.rawSectorId || ''
+        }
       } else {
-        form.value = { title: '', description: '', dueDate: '', sector: '' }
+        form.value = { title: '', description: '', dueDate: '', sectorId: '' }
       }
     }
   },

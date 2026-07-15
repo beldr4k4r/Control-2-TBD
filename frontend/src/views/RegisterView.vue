@@ -12,7 +12,6 @@
         <input type="password" id="reg-password" v-model="form.password" required />
       </div>
 
-      <!-- NUEVO: Campo para confirmar contraseña -->
       <div class="form-group">
         <label for="reg-confirm-password">Confirmar Contraseña:</label>
         <input type="password" id="reg-confirm-password" v-model="form.confirmPassword" required />

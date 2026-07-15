@@ -7,48 +7,32 @@
     <div class="stats-grid">
       <div class="stat-card">
         <h3>Tareas por Sector</h3>
-        <ul class="sector-list">
+        <ul class="sector-list" v-if="stats.tasksBySector.length > 0">
           <li v-for="sector in stats.tasksBySector" :key="sector.name">
             <span>{{ sector.name }}</span>
             <strong>{{ sector.count }}</strong>
           </li>
         </ul>
+        <p v-else class="note">No hay datos por sector.</p>
       </div>
 
       <div class="stat-card highlight-card">
-        <h3>Tarea Más Cercana</h3>
+        <h3>Tarea Pendiente Más Cercana</h3>
         <p class="task-name">{{ stats.nearestTask.title }}</p>
-        <p class="distance">
-          A <strong>{{ stats.nearestTask.distance }} km</strong> de tu ubicación
-        </p>
-      </div>
-
-      <div class="stat-card">
-        <h3>Tarea Más Lejana</h3>
-        <p class="task-name">{{ stats.furthestTask.title }}</p>
-        <p class="distance">
-          A <strong>{{ stats.furthestTask.distance }} km</strong> de distancia
-        </p>
+        <p class="note">Prioridad geográfica calculada por el sistema</p>
       </div>
 
       <div class="stat-card">
         <h3>Distancia Promedio</h3>
-        <p class="big-number">{{ stats.averageDistance }} <span class="unit">km</span></p>
-        <p class="note">Promedio hacia tareas pendientes</p>
-      </div>
-
-      <div class="stat-card">
-        <h3>En tu Radar (Radio 5km)</h3>
-        <p class="big-number">{{ stats.tasksInRadius }}</p>
-        <p class="note">Tareas operativas en tu zona</p>
+        <p class="big-number">{{ stats.averageDistance }}</p>
+        <p class="note">Distancia relativa hacia tareas completadas</p>
       </div>
 
       <div class="stat-card warning-card">
-        <h3>Sector Crítico</h3>
+        <h3>Sector Más Activo (5km)</h3>
         <p class="task-name">{{ stats.mostCongestedSector.name }}</p>
         <p class="note">
-          Concentra el <strong>{{ stats.mostCongestedSector.percentage }}%</strong> de los
-          pendientes
+          Concentra <strong>{{ stats.mostCongestedSector.count }}</strong> tareas completadas cerca de ti
         </p>
       </div>
     </div>
@@ -56,29 +40,81 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import api from '../services/api.js'
 
 const stats = ref({
-  tasksBySector: [
-    { name: 'Calles', count: 12 },
-    { name: 'Construcción', count: 5 },
-    { name: 'Reparación de Semáforos', count: 8 },
-    { name: 'Parques y Jardines', count: 3 },
-  ],
-  nearestTask: {
-    title: 'Reparar semáforo Alameda',
-    distance: 1.2,
-  },
-  furthestTask: {
-    title: 'Bacheo en periferia',
-    distance: 14.5,
-  },
-  averageDistance: 5.8,
-  tasksInRadius: 7,
-  mostCongestedSector: {
-    name: 'Calles',
-    percentage: 42,
-  },
+  tasksBySector: [],
+  nearestTask: { title: 'Cargando...' },
+  averageDistance: 0,
+  mostCongestedSector: { name: 'Cargando...', count: 0 },
+})
+
+const getUserIdFromToken = () => {
+  const token = localStorage.getItem('jwt_token')
+  if (!token) return null
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(jsonPayload).id_auth
+  } catch (error) {
+    console.error('Error al decodificar token', error)
+    return null
+  }
+}
+
+const fetchDashboardStats = async () => {
+  const userId = getUserIdFromToken()
+  if (!userId) {
+    alert('Sesión expirada')
+    window.location.href = '/login'
+    return
+  }
+
+  try {
+    const sectorRes = await api.get(`/tasks/user/${userId}/by-sector`)
+    stats.value.tasksBySector = sectorRes.data.map(item => ({
+      name: item.sectorName,
+      count: item.taskCount
+    }))
+
+    try {
+      const nearestRes = await api.get(`/tasks/user/${userId}/nearest`)
+      stats.value.nearestTask.title = nearestRes.data.task_name || 'Sin nombre'
+    } catch (e) {
+      stats.value.nearestTask.title = 'No hay tareas pendientes'
+    }
+
+    try {
+      const avgRes = await api.get(`/tasks/user/${userId}/average-distance`)
+      stats.value.averageDistance = parseFloat(avgRes.data).toFixed(2)
+    } catch (e) {
+      stats.value.averageDistance = '0.00'
+    }
+
+    try {
+      const congestedRes = await api.get(`/tasks/user/${userId}/sector-most-completed?radiusKm=5`)
+      stats.value.mostCongestedSector = {
+        name: congestedRes.data.sectorName,
+        count: congestedRes.data.taskCount
+      }
+    } catch (e) {
+      stats.value.mostCongestedSector = { name: 'Sin datos en 5km', count: 0 }
+    }
+
+  } catch (error) {
+    console.error('Error general al cargar el Dashboard:', error)
+  }
+}
+
+onMounted(() => {
+  fetchDashboardStats()
 })
 </script>
 
@@ -124,11 +160,6 @@ h2 {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
-.card-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
 h3 {
   font-size: 1.1rem;
   color: #555;
@@ -162,7 +193,6 @@ h3 {
   margin-bottom: 0.5rem;
 }
 
-.distance,
 .note {
   color: #777;
   font-size: 0.95rem;
@@ -173,11 +203,6 @@ h3 {
   font-weight: bold;
   color: #007bff;
   margin: 0.5rem 0;
-}
-
-.unit {
-  font-size: 1.2rem;
-  color: #666;
 }
 
 .highlight-card {

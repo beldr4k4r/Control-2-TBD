@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 import org.locationtech.jts.geom.Point;
+// Importa JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @NoArgsConstructor
@@ -23,9 +25,11 @@ public class Sector {
     @Column (unique = true)
     private String sectorName;
 
+    @JsonIgnore
     @Column(columnDefinition = "geometry(Point, 4326)")
     private Point sectorLocation;
 
+    @JsonIgnore 
     @OneToMany(mappedBy = "sector")
     private List<Tasks> tasks = new ArrayList<>();
 }

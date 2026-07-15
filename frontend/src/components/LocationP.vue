@@ -30,7 +30,6 @@ import { LMap, LTileLayer, LMarker } from '@vue-leaflet/vue-leaflet'
 const emit = defineEmits(['update:location'])
 
 const zoom = ref(13)
-// Coordenadas centrales por defecto (Santiago)
 const center = ref([-33.4489, -70.6693])
 const marker = ref(null)
 

@@ -5,11 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="45f98f4c-ea35-465b-90fc-f28ed5ce8c4c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/api/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/api/src/main/java/com/management/api/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/api/src/main/java/com/management/api/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/LoginView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/LoginView.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api/src/main/java/com/management/api/models/Sector.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/api/src/main/java/com/management/api/models/Sector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/LocationP.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/LocationP.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/TaskF.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/TaskF.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/DashboardView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/DashboardView.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/views/RegisterView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/RegisterView.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/TasksView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/TasksView.vue" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,7 +113,9 @@
       <updated>1783456024203</updated>
       <workItem from="1783456025581" duration="10000" />
       <workItem from="1783819414995" duration="4305000" />
-      <workItem from="1784101268520" duration="711000" />
+      <workItem from="1784101268520" duration="1507000" />
+      <workItem from="1784140605394" duration="136000" />
+      <workItem from="1784147368921" duration="6239000" />
     </task>
     <servers />
   </component>

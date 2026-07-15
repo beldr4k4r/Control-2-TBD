@@ -4,6 +4,7 @@
     <div class="header-actions">
       <button @click="openNewTaskModal" class="btn-new-task">+ Nueva Tarea</button>
       <router-link to="/dashboard" class="btn-dashboard">Ver Estadísticas y Mapa</router-link>
+      <button @click="logout" class="btn-logout">Cerrar Sesión</button>
     </div>
 
     <div v-if="urgentTasks.length > 0" class="notification-banner">
@@ -15,7 +16,7 @@
       </ul>
     </div>
 
-    <TaskForm :isOpen="isModalOpen" :taskData="taskToEdit" @close="closeModal" @save="saveTask" />
+    <TaskForm :isOpen="isModalOpen" :taskData="taskToEdit" :sectors="sectors" @close="closeModal" @save="saveTask" />
 
     <div class="filters">
       <input
@@ -47,42 +48,84 @@
       <p>No se encontraron tareas con esos filtros.</p>
     </div>
   </div>
+  
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import TaskCard from '../components/TaskC.vue'
 import TaskForm from '../components/TaskF.vue'
+import api from '../services/api.js' 
 
 const searchQuery = ref('')
 const statusFilter = ref('all')
 
-const tasks = ref([
-  {
-    id: 1,
-    title: 'Reparar semáforo',
-    description: 'El semáforo de Alameda con Matucana no tiene luz roja.',
-    dueDate: '2026-05-30',
-    sector: 'reparación de semáforos',
-    completed: false,
-  },
-  {
-    id: 2,
-    title: 'Bacheo de calle',
-    description: 'Tapar hoyo peligroso en pista derecha.',
-    dueDate: '2026-05-28',
-    sector: 'calles',
-    completed: true,
-  },
-  {
-    id: 3,
-    title: 'Inspección de obra',
-    description: 'Revisar avances de la nueva construcción.',
-    dueDate: '2026-06-05',
-    sector: 'construcción',
-    completed: false,
-  },
-])
+const tasks = ref([])
+const sectors = ref([])
+const isModalOpen = ref(false)
+const taskToEdit = ref(null)
+
+const logout = () => {
+  localStorage.removeItem('jwt_token')
+  window.location.href = '/login'
+}
+const getUserIdFromToken = () => {
+  const token = localStorage.getItem('jwt_token')
+  if (!token) return null
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(jsonPayload).id_auth
+  } catch (error) {
+    console.error('Error al decodificar el token:', error)
+    return null
+  }
+}
+
+const fetchTasks = async () => {
+  const userId = getUserIdFromToken()
+  if (!userId) {
+    alert('Sesión expirada o inválida. Por favor, inicia sesión nuevamente.')
+    window.location.href = '/login'
+    return
+  }
+
+  try {
+    const response = await api.get(`/tasks/user/${userId}`)
+    tasks.value = response.data.map(backendTask => {
+      return {
+        id: backendTask.id_task,
+        title: backendTask.task_name,
+        description: backendTask.task_descrition || '', 
+        dueDate: backendTask.task_expired,
+        completed: backendTask.complete_task,
+        sector: backendTask.sector ? backendTask.sector.sectorName : 'Sin sector asignado',
+        rawSectorId: backendTask.sector ? backendTask.sector.idSector : null 
+      }
+    })
+  } catch (error) {
+    console.error('Error al cargar las tareas del backend:', error)
+  }
+}
+const fetchSectors = async () => {
+  try {
+    const response = await api.get('/sectors')
+    sectors.value = response.data
+  } catch (error) {
+    console.error('Error al cargar los sectores:', error)
+  }
+}
+
+onMounted(() => {
+  fetchTasks()
+  fetchSectors()
+})
 
 const filteredTasks = computed(() => {
   return tasks.value.filter((task) => {
@@ -107,7 +150,6 @@ const urgentTasks = computed(() => {
 
   return tasks.value.filter((task) => {
     if (task.completed || !task.dueDate) return false
-
     const dueDate = new Date(task.dueDate)
     dueDate.setMinutes(dueDate.getMinutes() + dueDate.getTimezoneOffset())
     return dueDate <= limitDate
@@ -121,19 +163,29 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('es-CL')
 }
 
-const markAsCompleted = (taskId) => {
-  const task = tasks.value.find((t) => t.id === taskId)
-  if (task) task.completed = true
-}
-
-const deleteTask = (taskId) => {
-  if (confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
-    tasks.value = tasks.value.filter((t) => t.id !== taskId)
+const markAsCompleted = async (taskId) => {
+  try {
+    await api.patch(`/tasks/${taskId}/complete`)
+    const task = tasks.value.find((t) => t.id === taskId)
+    if (task) task.completed = true
+  } catch (error) {
+    console.error("Error al completar la tarea:", error)
+    alert('No se pudo marcar la tarea como completada.')
   }
 }
 
-const isModalOpen = ref(false)
-const taskToEdit = ref(null)
+const deleteTask = async (taskId) => {
+  if (confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
+    try {
+      await api.delete(`/tasks/${taskId}`)
+      tasks.value = tasks.value.filter((t) => t.id !== taskId)
+      alert('Tarea eliminada correctamente.')
+    } catch (error) {
+      console.error("Error al eliminar la tarea:", error)
+      alert('Hubo un error al eliminar la tarea.')
+    }
+  }
+}
 
 const openNewTaskModal = () => {
   taskToEdit.value = null
@@ -144,24 +196,38 @@ const closeModal = () => {
   isModalOpen.value = false
 }
 
-const saveTask = (taskData) => {
-  if (taskData.id) {
-    const index = tasks.value.findIndex((t) => t.id === taskData.id)
-    if (index !== -1) {
-      tasks.value[index] = taskData
-    }
-  } else {
-    taskData.id = Date.now()
-    taskData.completed = false
-    tasks.value.push(taskData)
-  }
-}
-
 const editTask = (taskId) => {
   const task = tasks.value.find((t) => t.id === taskId)
   if (task) {
     taskToEdit.value = { ...task }
     isModalOpen.value = true
+  }
+}
+
+const saveTask = async (taskData) => {
+  const userId = getUserIdFromToken()
+  
+  const payload = {
+    task_name: taskData.title,
+    task_descrition: taskData.description,
+    task_expired: taskData.dueDate,
+    complete_task: taskData.completed || false,
+    user: { idAuth: userId },
+    sector: { idSector: taskData.sectorId }
+  }
+
+  try {
+    if (taskData.id) {
+      await api.put(`/tasks/${taskData.id}`, payload)
+      alert('Tarea actualizada exitosamente.')
+    } else {
+      await api.post('/tasks', payload)
+      alert('Tarea creada exitosamente.')
+    }
+    await fetchTasks()
+  } catch (error) {
+    console.error("Error al guardar la tarea:", error)
+    alert('Hubo un error al guardar los cambios.')
   }
 }
 </script>
@@ -261,5 +327,20 @@ const editTask = (taskId) => {
 
 .notification-banner li {
   font-weight: bold;
+}
+.btn-logout {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.btn-logout:hover {
+  background-color: #c82333;
 }
 </style>
