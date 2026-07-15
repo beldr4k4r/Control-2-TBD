@@ -16,19 +16,20 @@ public interface TasksRepository extends JpaRepository<Tasks, Long>{
     List<Tasks> findByUserIdAuth(Long userId);
     List<Tasks> findBySector(Long IdSector);
 
-    @Query(value = "SELECT t.* FROM tasks t " + "JOIN sectors s ON t.sector_id = s.id " +
-           "JOIN auth_user u ON t.user_id = u.id_auth " +
-           "WHERE t.user_id = ?1 AND t.completed = false " +
-           "ORDER BY ST_Distance(s.location, u.location) ASC LIMIT 1", 
-           nativeQuery = true)
+    @Query(value = "SELECT t.* FROM tasks t " +
+            "JOIN sectors s ON t.id_sector = s.id_sector " +
+            "JOIN auth_user u ON t.user_id = u.id_auth " +
+            "WHERE t.user_id = ?1 AND t.complete_task = false " +
+            "ORDER BY ST_Distance(s.sector_location, u.location) ASC LIMIT 1",
+            nativeQuery = true)
     Tasks findNearestPendingTask(Long userId);
 
-    @Query(value = "SELECT COALESCE(AVG(ST_Distance(s.location, u.location)), 0) " +
-           "FROM tasks t " +
-           "JOIN sectors s ON t.sector_id = s.id " +
-           "JOIN auth_user u ON t.user_id = u.id_auth " +
-           "WHERE t.user_id = ?1 AND t.completed = true", 
-           nativeQuery = true)
+    @Query(value = "SELECT COALESCE(AVG(ST_Distance(s.sector_location, u.location)), 0) " +
+            "FROM tasks t " +
+            "JOIN sectors s ON t.id_sector = s.id_sector " +
+            "JOIN auth_user u ON t.user_id = u.id_auth " +
+            "WHERE t.user_id = ?1 AND t.complete_task = true",
+            nativeQuery = true)
     Double getAverageDistanceOfCompletedTasks(Long userId);
 
     @Query(value = "SELECT * FROM tasks WHERE " +
