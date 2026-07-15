@@ -12,6 +12,12 @@
         <input type="password" id="reg-password" v-model="form.password" required />
       </div>
 
+      <!-- NUEVO: Campo para confirmar contraseña -->
+      <div class="form-group">
+        <label for="reg-confirm-password">Confirmar Contraseña:</label>
+        <input type="password" id="reg-confirm-password" v-model="form.confirmPassword" required />
+      </div>
+
       <div class="form-group">
         <label>Selecciona tu dirección geográfica en el mapa:</label>
         <LocationPicker @update:location="handleLocationUpdate" />
@@ -33,6 +39,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import api from '../services/api'
 import LocationPicker from '../components/LocationP.vue'
 
 const router = useRouter()
@@ -40,6 +47,7 @@ const router = useRouter()
 const form = ref({
   username: '',
   password: '',
+  confirmPassword: '', 
   latitude: null,
   longitude: null,
 })
@@ -49,15 +57,35 @@ const handleLocationUpdate = (coords) => {
   form.value.longitude = coords.lng
 }
 
-const handleRegister = () => {
+const handleRegister = async () => {
   if (!form.value.latitude || !form.value.longitude) {
     alert('Por favor, selecciona un punto en el mapa para registrar tu dirección geográfica.')
     return
   }
 
-  console.log('Datos listos para enviar a PostGIS/Spring:', form.value)
-  alert('¡Usuario registrado exitosamente (Simulado)! Redirigiendo a tus tareas...')
-  router.push('/tasks')
+  if (form.value.password !== form.value.confirmPassword) {
+    alert('Las contraseñas no coinciden.')
+    return
+  }
+
+  try {
+    const payload = {
+      username: form.value.username,
+      password: form.value.password,
+      confirmPassword: form.value.confirmPassword,
+      latitud: form.value.latitude,
+      longitud: form.value.longitude
+    };
+
+    await api.post('/auth/register', payload);
+    
+    alert('¡Usuario registrado exitosamente! Ahora puedes iniciar sesión.');
+    router.push('/login');
+
+  } catch (error) {
+    console.error("Error al registrar:", error);
+    alert('Hubo un error al registrar el usuario: ' + (error.response?.data || error.message));
+  }
 }
 </script>
 

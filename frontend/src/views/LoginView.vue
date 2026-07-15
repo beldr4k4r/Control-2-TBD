@@ -24,15 +24,26 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import api from '../services/api'
 
 const username = ref('')
 const password = ref('')
 const router = useRouter()
 
-const handleLogin = () => {
+const handleLogin = async () => {
   if (username.value && password.value) {
-    console.log('Intento de login con:', { username: username.value, password: password.value })
-    router.push('/tasks')
+    try {
+      const response = await api.post('/auth/login', {
+        username: username.value,
+        password: password.value
+      });
+      localStorage.setItem('jwt_token', response.data);
+
+      alert('¡Login exitoso!');
+      router.push('/tasks');
+    } catch (error) {
+      alert('Credenciales incorrectas o error en el servidor.');
+    }
   }
 }
 </script>
