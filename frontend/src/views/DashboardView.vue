@@ -1,4 +1,4 @@
-<template>
+  <template>
   <div class="dashboard-container">
     <router-link to="/tasks" class="btn-back">⬅ Volver a Mis Tareas</router-link>
     <h2>Dashboard de Estadísticas Espaciales</h2>
@@ -35,6 +35,16 @@
           Concentra <strong>{{ stats.mostCongestedSector.count }}</strong> tareas completadas cerca de ti
         </p>
       </div>
+      <div class="stat-card cluster-card">
+  <h3>Concentración de Tareas Pendientes</h3>
+  <ul class="sector-list" v-if="stats.pendingClusters.length > 0">
+    <li v-for="cluster in stats.pendingClusters" :key="cluster.clusterId">
+      <span>Zona {{ cluster.clusterId }} ({{ cluster.centroidLatitude.toFixed(4) }}, {{ cluster.centroidLongitude.toFixed(4) }})</span>
+      <strong>{{ cluster.taskCount }}</strong>
+    </li>
+  </ul>
+  <p v-else class="note">No hay agrupaciones de tareas pendientes.</p>
+</div>
     </div>
   </div>
 </template>
@@ -48,6 +58,7 @@ const stats = ref({
   nearestTask: { title: 'Cargando...' },
   averageDistance: 0,
   mostCongestedSector: { name: 'Cargando...', count: 0 },
+  pendingClusters: [],
 })
 
 const getUserIdFromToken = () => {
@@ -107,6 +118,12 @@ const fetchDashboardStats = async () => {
     } catch (e) {
       stats.value.mostCongestedSector = { name: 'Sin datos en 5km', count: 0 }
     }
+    try {
+  const clustersRes = await api.get('/tasks/pending-clusters')
+  stats.value.pendingClusters = clustersRes.data
+} catch (e) {
+  stats.value.pendingClusters = []
+}
 
   } catch (error) {
     console.error('Error general al cargar el Dashboard:', error)
@@ -154,6 +171,7 @@ h2 {
   text-align: center;
   transition: transform 0.2s ease;
 }
+
 
 .stat-card:hover {
   transform: translateY(-5px);
