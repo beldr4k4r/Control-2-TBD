@@ -36,7 +36,7 @@ public interface TasksRepository extends JpaRepository<Tasks, Long>{
     @Query(value = "SELECT * FROM tasks WHERE " +
             "(?1 IS NULL OR complete_task = ?1) AND " +
             "(?2 IS NULL OR LOWER(task_name) LIKE LOWER(CONCAT('%', ?2, '%')) " +
-            "OR LOWER(description) LIKE LOWER(CONCAT('%', ?2, '%')))",
+            "OR LOWER(task_descrition) LIKE LOWER(CONCAT('%', ?2, '%')))",
             nativeQuery = true)
     List<Tasks> findByCompletedAndKeyword(Boolean completed, String keyword);
 
