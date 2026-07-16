@@ -58,11 +58,11 @@ public class Tasks {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "location", "tasks"}) // <--- AGREGA ESTO
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "location", "tasks"})
     private AuthUser user;
 
     @ManyToOne
     @JoinColumn(name = "id_sector", nullable = false)
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "location", "tasks"}) // <--- AGREGA ESTO
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "location", "tasks"})
     private Sector sector;
 }
