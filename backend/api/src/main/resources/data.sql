@@ -10,9 +10,9 @@ INSERT INTO sectors (sector_name, sector_location) VALUES
 
 --Contraseña para todos: password123
 INSERT INTO auth_user (username, password, location) VALUES
-('jperez', '$2a$10$8K1p/a0dURXAM7Bl6/9YQO4/i6gV3lNfHu2h9zRomAJdkuVaJhoYS', ST_SetSRID(ST_MakePoint(-70.5478, -33.4831), 4326)),
-('mgonzalez', '$2a$10$8K1p/a0dURXAM7Bl6/9YQO4/i6gV3lNfHu2h9zRomAJdkuVaJhoYS', ST_SetSRID(ST_MakePoint(-70.6089, -33.4260), 4326)),
-('crodriguez', '$2a$10$8K1p/a0dURXAM7Bl6/9YQO4/i6gV3lNfHu2h9zRomAJdkuVaJhoYS', ST_SetSRID(ST_MakePoint(-70.5654, -33.4095), 4326));
+('jperez', '$2a$10$BabNEZNrZr0eYggM.5uwX.t1yUtKK7P43PKEp2PKMf.MtG/aEKoae', ST_SetSRID(ST_MakePoint(-70.5478, -33.4831), 4326)),
+('mgonzalez', '$2a$10$BabNEZNrZr0eYggM.5uwX.t1yUtKK7P43PKEp2PKMf.MtG/aEKoae', ST_SetSRID(ST_MakePoint(-70.6089, -33.4260), 4326)),
+('crodriguez', '$2a$10$BabNEZNrZr0eYggM.5uwX.t1yUtKK7P43PKEp2PKMf.MtG/aEKoae', ST_SetSRID(ST_MakePoint(-70.5654, -33.4095), 4326));
 
 INSERT INTO tasks (task_name, task_descrition, task_expired, complete_task, task_create, task_update, user_id, id_sector) VALUES
 ('Reparar semáforo intersección Vicuña Mackenna',
