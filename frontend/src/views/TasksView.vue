@@ -48,14 +48,14 @@
       <p>No se encontraron tareas con esos filtros.</p>
     </div>
   </div>
-  
+
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import TaskCard from '../components/TaskC.vue'
 import TaskForm from '../components/TaskF.vue'
-import api from '../services/api.js' 
+import api from '../services/api.js'
 
 const searchQuery = ref('')
 const statusFilter = ref('all')
@@ -69,6 +69,7 @@ const logout = () => {
   localStorage.removeItem('jwt_token')
   window.location.href = '/login'
 }
+
 const getUserIdFromToken = () => {
   const token = localStorage.getItem('jwt_token')
   if (!token) return null
@@ -97,22 +98,39 @@ const fetchTasks = async () => {
   }
 
   try {
-    const response = await api.get(`/tasks/user/${userId}`)
-    tasks.value = response.data.map(backendTask => {
-      return {
-        id: backendTask.id_task,
-        title: backendTask.task_name,
-        description: backendTask.task_descrition || '', 
-        dueDate: backendTask.task_expired,
-        completed: backendTask.complete_task,
-        sector: backendTask.sector ? backendTask.sector.sectorName : 'Sin sector asignado',
-        rawSectorId: backendTask.sector ? backendTask.sector.idSector : null 
-      }
-    })
+    const params = {}
+
+    if (statusFilter.value === 'completed') {
+      params.completed = true
+    } else if (statusFilter.value === 'pending') {
+      params.completed = false
+    }
+    if (searchQuery.value && searchQuery.value.trim() !== '') {
+      params.keyword = searchQuery.value.trim()
+    }
+
+    const response = await api.get('/tasks/filter', { params })
+
+    if (Array.isArray(response.data)) {
+      tasks.value = response.data.map(backendTask => {
+        return {
+          id: backendTask.id_task,
+          title: backendTask.task_name,
+          description: backendTask.description || backendTask.task_descrition || '',
+          dueDate: backendTask.task_expired,
+          completed: backendTask.complete_task,
+          sector: backendTask.sector ? backendTask.sector.name : 'Sin sector asignado',
+          rawSectorId: backendTask.sector ? backendTask.sector.id : null
+        }
+      })
+    } else {
+      tasks.value = []
+    }
   } catch (error) {
     console.error('Error al cargar las tareas del backend:', error)
   }
 }
+
 const fetchSectors = async () => {
   try {
     const response = await api.get('/sectors')
@@ -122,25 +140,17 @@ const fetchSectors = async () => {
   }
 }
 
+watch([searchQuery, statusFilter], () => {
+  fetchTasks()
+})
+
 onMounted(() => {
   fetchTasks()
   fetchSectors()
 })
 
 const filteredTasks = computed(() => {
-  return tasks.value.filter((task) => {
-    const matchesStatus =
-      statusFilter.value === 'all' ||
-      (statusFilter.value === 'completed' && task.completed) ||
-      (statusFilter.value === 'pending' && !task.completed)
-
-    const lowerCaseQuery = searchQuery.value.toLowerCase()
-    const matchesSearch =
-      task.title.toLowerCase().includes(lowerCaseQuery) ||
-      task.description.toLowerCase().includes(lowerCaseQuery)
-
-    return matchesStatus && matchesSearch
-  })
+  return tasks.value
 })
 
 const urgentTasks = computed(() => {
@@ -166,8 +176,7 @@ const formatDate = (dateString) => {
 const markAsCompleted = async (taskId) => {
   try {
     await api.patch(`/tasks/${taskId}/complete`)
-    const task = tasks.value.find((t) => t.id === taskId)
-    if (task) task.completed = true
+    await fetchTasks()
   } catch (error) {
     console.error("Error al completar la tarea:", error)
     alert('No se pudo marcar la tarea como completada.')
@@ -178,7 +187,7 @@ const deleteTask = async (taskId) => {
   if (confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
     try {
       await api.delete(`/tasks/${taskId}`)
-      tasks.value = tasks.value.filter((t) => t.id !== taskId)
+      await fetchTasks()
       alert('Tarea eliminada correctamente.')
     } catch (error) {
       console.error("Error al eliminar la tarea:", error)
@@ -206,7 +215,7 @@ const editTask = (taskId) => {
 
 const saveTask = async (taskData) => {
   const userId = getUserIdFromToken()
-  
+
   const payload = {
     task_name: taskData.title,
     task_descrition: taskData.description,
