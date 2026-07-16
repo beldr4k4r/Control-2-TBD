@@ -1,4 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS postgis;
+TRUNCATE TABLE tasks, auth_user, sectors RESTART IDENTITY CASCADE;
 
 INSERT INTO sectors (sector_name, sector_location) VALUES
 ('Reparación de semáforos', ST_SetSRID(ST_MakePoint(-70.5354, -33.4872), 4326)),
